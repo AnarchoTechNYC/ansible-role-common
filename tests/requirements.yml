@@ -1,0 +1,4 @@
+---
+- name: iptables
+  src: https://github.com/AnarchoTechNYC/ansible-role-iptables
+  scm: git

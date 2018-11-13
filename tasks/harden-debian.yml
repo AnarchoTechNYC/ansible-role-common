@@ -1,0 +1,5 @@
+# Tasks for hardening the base of a Debian-dervied OS host.
+---
+- name: Include Raspbian-specific hardening tasks.
+  when: rpi_issue.stat.exists
+  import_tasks: "harden-raspbian.yml"

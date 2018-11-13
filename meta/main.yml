@@ -1,0 +1,10 @@
+---
+dependencies:
+  - name: iptables
+    src: https://github.com/AnarchoTechNYC/ansible-role-iptables
+    version: master
+galaxy_info:
+  role_name: common
+  company: Eat The Rich, Inc.
+  license: AGPL-3.0-or-later # SPDX tag from https://spdx.org/licenses/
+  min_ansible_version: 2.7

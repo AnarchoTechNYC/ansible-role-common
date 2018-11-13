@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  become: true
+  tasks:
+    - name: Install Git.
+      package:
+        name: git
+        state: present
+
+    - name: Install OpenSSH server.
+      package:
+        name: openssh-server
+        state: present
