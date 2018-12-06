@@ -3,3 +3,6 @@
   service:
     name: ssh
     state: reloaded
+
+- name: reboot
+  import_tasks: reboot.yml

@@ -2,7 +2,9 @@
 dependencies:
   - name: iptables
     src: https://github.com/AnarchoTechNYC/ansible-role-iptables
+    scm: git
     version: master
+
 galaxy_info:
   role_name: common
   company: Eat The Rich, Inc.

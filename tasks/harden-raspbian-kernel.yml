@@ -1,0 +1,159 @@
+# Tasks to build a hardened Linux kernel on a Raspberry Pi device.
+#
+# This automates the procedure described in the RPi documentation:
+# https://www.raspberrypi.org/documentation/linux/kernel/building.md
+---
+- name: Ensure kernel build dependencies are present.
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - git
+    - bc
+    - python-pexpect # For kernel configuration questions.
+
+- name: Ensure local source directory exists.
+  file:
+    path: /usr/local/src/rpi-kernel
+    state: directory
+    owner: root
+    group: root
+    mode: "700"
+
+- name: Clone Linux source code.
+  git:
+    repo: https://github.com/raspberrypi/linux.git
+    dest: /usr/local/src/rpi-kernel/linux
+    depth: 1
+
+- name: Make ARMv7 chipset kernel configuration.
+  when: ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv7l'
+  command: "make bcm2709_defconfig"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+
+- name: Make ARMv6 chipset kernel configuration.
+  when: ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv6l'
+  command: "make bcmrpi_defconfig"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+
+# TODO: Move kernel configuration commands to its own Ansible role.
+- name: Configure kernel with AppArmor support.
+  lineinfile:
+    path: /usr/local/src/rpi-kernel/linux/.config
+    regexp: '^#?\s*{{ item.param }}(?: is not set|=)'
+    line: "{{ item.param }}={{ item.value | default('y') }}"
+    state: "{{ item.state | default('present') }}"
+  loop:
+    - param: CONFIG_SECURITY
+      value: y
+      state: present
+    - param: CONFIG_SECURITYFS
+      value: y
+      state: present
+    - param: CONFIG_SECURITY_NETWORK
+      value: y
+      state: present
+    - param: CONFIG_SECURITY_PATH
+      value: y
+      state: present
+    - param: CONFIG_SECURITY_APPARMOR
+      value: y
+      state: present
+    - param: CONFIG_SECURITY_APPARMOR_HASH
+      value: y
+      state: present
+    - param: CONFIG_SECURITY_APPARMOR_HASH_DEFAULT
+      value: y
+      state: present
+    - param: CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE
+      value: 1
+      state: present
+    - param: CONFIG_INTEGRITY
+      value: y
+      state: present
+    - param: CONFIG_INTEGRITY_AUDIT
+      value: y
+      state: present
+    - param: CONFIG_DEFAULT_SECURITY_APPARMOR
+      value: y
+      state: present
+    - param: CONFIG_DEFAULT_SECURITY
+      value: '"apparmor"'
+      state: present
+    - param: CONFIG_AUDIT
+      value: y
+      state: present
+    - param: CONFIG_AUDITSYSCALL
+      value: y
+      state: present
+    - param: CONFIG_AUDIT_WATCH
+      value: y
+      state: present
+    - param: CONFIG_AUDIT_TREE
+      value: y
+      state: present
+    - param: CONFIG_CRYPTO_SHA1
+      value: y
+      state: present
+    - param: CONFIG_AUDIT_GENERIC
+      value: y
+      state: present
+
+    # Configuration options to remove/unset.
+    - param: CONFIG_DEFAULT_SECURITY_DAC
+      state: absent
+
+- name: Recompile kernel.
+  expect:
+    chdir: /usr/local/src/rpi-kernel/linux
+    command: "make -j {{ ansible_processor_count | default(1) // 2 }} zImage modules dtbs"
+    creates: /usr/local/src/rpi-kernel/linux/arch/arm/boot/zImage
+    timeout: null
+    responses:
+      'N/y/?': N
+      'N/m/?': N
+      'choice\[1-': '' # Choose default.
+
+- name: Install kernel modules.
+  command: "make modules_install"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+  notify: reboot
+
+- name: Install RPi Linux kernel.
+  command: "cp arch/arm/boot/zImage /boot/kernel{% if ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv7l' %}7{% endif %}.img"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+  notify: reboot
+
+- name: Install RPi device tree blobs.
+  shell: "cp arch/arm/boot/dts/*.dtb /boot/"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+  notify: reboot
+
+- name: Install RPi device tree blob overlays.
+  shell: "cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+  notify: reboot
+
+- name: Install RPi device tree blob overlays README file.
+  shell: "cp arch/arm/boot/dts/overlays/README /boot/overlays/"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+
+- name: Reclaim disk space from kernel build process.
+  file:
+    path: /usr/local/src/rpi-kernel
+    state: absent
+
+- name: Hold updates for stock RPi kernel and bootloader.
+  register: apt_mark
+  command: "apt-mark hold {{ item }}"
+  changed_when: "'was already set on hold' not in apt_mark.stdout"
+  loop:
+    - raspberrypi-kernel
+    - raspberrypi-bootloader

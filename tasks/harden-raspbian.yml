@@ -1,2 +1,45 @@
 # Tasks to harden a Raspbian OS system.
 ---
+- name: Add AppArmor support to kernel.
+  when:
+    - ansible_apparmor is defined
+    - ansible_apparmor.status | default('disabled') == "disabled"
+  block:
+    - name: Check for GRUB.
+      register: grub
+      stat:
+        path: /boot/grub/grub.cfg
+        get_checksum: false
+
+    - name: Add AppArmor command line parameters to default GRUB entry.
+      when: grub.stat.exists
+      register: grub_cmdline
+      lineinfile:
+        path: /etc/default/grub
+        regexp: '^\s*GRUB_CMDLINE_LINUX_DEFAULT="((?!apparmor=1)(?!security=apparmor)[\w=/\-\.\,\_ ]+)*"\s*$'
+        backrefs: true
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="apparmor=1 security=apparmor \1"'
+
+    - name: Update GRUB bootloader.
+      when: grub_cmdline is changed
+      command: update-grub
+      notify: reboot
+
+    - name: Check for RPi firmware bootloader.
+      # See https://www.raspberrypi.org/documentation/configuration/cmdline-txt.md
+      register: cmdline_txt
+      stat:
+        path: /boot/cmdline.txt
+
+    - name: Build AppArmor-enabled RPi kernel.
+      when: cmdline_txt.stat.exists
+      import_tasks: harden-raspbian-kernel.yml
+
+- name: Install AppArmor utilities and profiles.
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - apparmor-utils
+    - apparmor-profiles
+    - apparmor-profiles-extra
