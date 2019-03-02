@@ -11,6 +11,9 @@
     - git
     - bc
     - python-pexpect # For kernel configuration questions.
+    - bison
+    - flex
+    - libssl-dev
 
 - name: Ensure local source directory exists.
   file:
