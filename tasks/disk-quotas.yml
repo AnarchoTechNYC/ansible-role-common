@@ -1,0 +1,64 @@
+# Tasks related to disk quota management. The disk quota system is
+# present in mainline Linux so should be available by default.
+# However, the mainline implementation supports disk quotas only on
+# certain filesystem types, so these are checked first.
+---
+- name: Register root filesystem mount.
+  register: root_fs_line
+  command: grep -E ^[^#].*\\s/\\s /etc/fstab
+  changed_when: false
+
+- name: Enable disk quotas. # (On `ext3`, `ext4`, or `xfs` only.)
+  when: root_fs_line.stdout.split()[2] is match('(?:ext[34]|xfs)')
+  block:
+    - name: Install quota tools.
+      package:
+        name: quota
+
+    - name: Add quota mount options for root filesystem.
+      when: root_fs_line.stdout.split()[3] is not search('(?:usr|grp)j?quota')
+      register: edit_fstab
+      mount:
+        src: "{{ root_fs_line.stdout.split()[0] }}"
+        path: "/"
+        fstype: "{{ root_fs_line.stdout.split()[2] }}"
+        opts: "{{ root_fs_line.stdout.split()[3] }},usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv1"
+        state: present
+
+    # TODO: Change this to use the `mount` module when the new
+    #       `remount` `state` is supported. See
+    #       https://github.com/ansible/ansible/pull/52649
+    - name: Remount root filesystem.
+      when: edit_fstab is changed
+      command: "mount -o remount /"
+      args:
+        warn: false
+
+    - name: Create disk quota indexes.
+      when: edit_fstab is changed
+      command: "quotacheck --{{ item | quote }} --create-files --no-remount --verbose /"
+      args:
+        creates: "/aquota.{{ item }}"
+      loop:
+        - user
+        - group
+
+    - name: Set quotas for users.
+      command: >
+          setquota --user {{ item.name | quote }}
+          {{ item.block_soft | default(0) | quote }}
+          {{ item.block_hard | default(0) | quote }}
+          {{ item.inode_soft | default(0) | quote }}
+          {{ item.inode_hard | default(0) | quote }}
+          {{ item.filesystem | default('/') | quote }}
+      loop: "{{ disk_quotas_users }}"
+
+    - name: Set quotas for groups.
+      command: >
+          setquota --group {{ item.name | quote }}
+          {{ item.block_soft | default(0) | quote }}
+          {{ item.block_hard | default(0) | quote }}
+          {{ item.inode_soft | default(0) | quote }}
+          {{ item.inode_hard | default(0) | quote }}
+          {{ item.filesystem | default('/') | quote }}
+      loop: "{{ disk_quotas_groups }}"

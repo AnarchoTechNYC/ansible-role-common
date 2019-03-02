@@ -1,5 +1,10 @@
 ---
 - hosts: localhost
   become: true
+
+  vars:
+    # Don't do disk quotas on Travis CI (for now?).
+    enable_root_fs_disk_quotas: false
+
   roles:
     - ansible-role-common

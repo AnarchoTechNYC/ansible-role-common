@@ -12,7 +12,7 @@
   notify: reboot
 
 # TODO: Figure out how to script disabling the hardware interfaces
-#       of the RPi version 3 hadware.
+#       of the RPi version 3 hardware.
 #
 #       Of possible interest to do this is to read and learn from
 #       https://www.raspberrypi.org/documentation/configuration/device-tree.md
