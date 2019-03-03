@@ -1,0 +1,30 @@
+# The quota tools seem to require the /dev/root symlink to exist?
+# These tasks ensure the file is a symlink to the correct device.
+---
+- name: Check for /dev/root file.
+  register: dev_root
+  stat:
+    path: /dev/root
+    get_checksum: false
+
+- name: Fix missing /dev/root file.
+  when: not dev_root.stat.exists
+  block:
+    - name: Register kernel command line.
+      register: kcmdline
+      command: "cat /proc/cmdline"
+
+    - name: Register root command line argument.
+      set_fact:
+        kcmdline_root: "{{ kcmdline.stdout | regex_search('root=[^ ]+') }}"
+
+    - name: Parse root command line argument.
+      set_fact:
+        kcmdline_root_tag: "{{ kcmdline_root | regex_search('(?:PART)?(?:UUID|LABEL)') }}"
+        kcmdline_root_dev: "{{ kcmdline_root.split('=')[-1] }}"
+
+    - name: Symlink root device file by tag.
+      file:
+        path: /dev/root
+        src: "{% if kcmdline_root_tag %}/dev/disk/by-{{ kcmdline_root_tag | lower }}/{{ kcmdline_root_dev }}{% else %}{{ kcmdline_root_dev }}{% endif %}"
+        state: link
