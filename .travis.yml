@@ -4,7 +4,6 @@ language: minimal
 env:
   - docker_repo: resin/rpi-raspbian
   - docker_repo: geerlingguy/docker-debian9-ansible
-  - docker_repo: geerlingguy/docker-debian8-ansible
   - docker_repo: geerlingguy/docker-ubuntu1804-ansible
   # TODO: Support for RedHat-based systems.
   #- docker_repo: geerlingguy/docker-centos7-ansible
