@@ -5,7 +5,7 @@
 #  ignore_errors: true                  #       Once variablized, remove `ignore_errors`, too.
 
 - name: Import disk quota tasks.
-  when: enable_root_fs_disk_quotas
+  when: enable_root_fs_disk_quotas | bool
   import_tasks: disk-quotas.yaml
 
 - name: Include OS-specific tasks.
