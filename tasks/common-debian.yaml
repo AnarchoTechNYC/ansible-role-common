@@ -8,4 +8,4 @@
 
 - name: Include Raspbian-specific tasks.
   when: rpi_issue.stat.exists
-  import_tasks: "common-raspbian.yml"
+  import_tasks: common-raspbian.yaml

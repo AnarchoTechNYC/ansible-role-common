@@ -5,4 +5,4 @@
     state: reloaded
 
 - name: reboot
-  import_tasks: reboot.yml
+  import_tasks: reboot.yaml

@@ -6,7 +6,7 @@
 
 - name: Import disk quota tasks.
   when: enable_root_fs_disk_quotas
-  import_tasks: disk-quotas.yml
+  import_tasks: disk-quotas.yaml
 
 - name: Include OS-specific tasks.
-  include_tasks: "common-{{ ansible_os_family | default('Debian') | lower }}.yml"
+  include_tasks: "common-{{ ansible_os_family | default('Debian') | lower }}.yaml"

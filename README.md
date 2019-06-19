@@ -20,7 +20,7 @@ This role incorporates a number of security considerations that are not often fo
 When `hardened_hosts` is `true` (the default), this role will perform baseline hardening tasks. You can further configure how the managed nodes will be hardened by setting any of the following variables:
 
 * `sshd_allow_group`: Determines the Operating System user account to restrict SSH access. For example:
-    ```yml
+    ```yaml
     hardened_hosts: true        # Perform system hardening.
     sshd_allow_group: ssh-users # Limit SSH access to users in the `ssh-users` group.
     ```
@@ -38,7 +38,7 @@ When `hardened_hosts` is `true` (the default), this role will perform baseline h
 
 It is often important to [impose disk utilization limits](https://wiki.archlinux.org/index.php/Disk_quota) on a certain [user account or user group](https://wiki.archlinux.org/index.php/Users_and_groups) to ensure that a rogue process or compromised service can not eat up all the available space on a given [filesystem](https://wiki.archlinux.org/index.php/File_systems). This can be trivially configured with the `disk_quotas_users` and `disk_quotas_groups` lists. For example, this snippet will configure the server to allow the `www-data` user (the account under which a typical Web server runs) access to no more than 50 gibibytes of space on the default filesystem:
 
-```yml
+```yaml
 disk_quotas_users:
   - name: www-data
     block_hard: 50G

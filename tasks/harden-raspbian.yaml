@@ -33,7 +33,7 @@
 
     - name: Build AppArmor-enabled RPi kernel.
       when: cmdline_txt.stat.exists
-      import_tasks: harden-raspbian-kernel.yml
+      import_tasks: harden-raspbian-kernel.yaml
 
 - name: Install AppArmor utilities and profiles.
   package:

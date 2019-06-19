@@ -27,7 +27,7 @@
       notify: Reload SSH.
 
 - name: Include OS-specific hardening tasks.
-  include_tasks: "harden-{{ ansible_os_family | default('Debian') | lower }}.yml"
+  include_tasks: "harden-{{ ansible_os_family | default('Debian') | lower }}.yaml"
 
 - name: Run queued handlers.
   meta: flush_handlers

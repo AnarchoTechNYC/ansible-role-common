@@ -38,7 +38,7 @@
     # missing the /dev/root symlink. This is a workaround.
     - name: Workaround for missing /dev/root file.
       when: edit_fstab is changed
-      import_tasks: disk-quotas-fix-dev-root.yml
+      import_tasks: disk-quotas-fix-dev-root.yaml
 
     - name: Create disk quota indexes.
       when: edit_fstab is changed

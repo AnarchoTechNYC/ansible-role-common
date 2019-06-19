@@ -2,4 +2,4 @@
 ---
 - name: Include Raspbian-specific hardening tasks.
   when: rpi_issue.stat.exists
-  import_tasks: "harden-raspbian.yml"
+  import_tasks: harden-raspbian.yaml

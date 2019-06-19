@@ -37,29 +37,29 @@ install:
   # Bootstrap container with needed utilities for play execution.
   - >
     docker container exec --tty $(cat ${container_id}) env TERM=xterm
-    ansible-playbook /etc/ansible/roles/ansible-role-common/tests/setup.yml
+    ansible-playbook /etc/ansible/roles/ansible-role-common/tests/setup.yaml
 
   # Install required Ansible roles (for role-to-role dependencies).
   - >
     docker container exec --tty $(cat ${container_id}) env TERM=xterm
-    ansible-galaxy install -r /etc/ansible/roles/ansible-role-common/tests/requirements.yml
+    ansible-galaxy install -r /etc/ansible/roles/ansible-role-common/tests/requirements.yaml
 
 script:
   # Check Ansible role/playbook syntax.
   - >
     docker container exec --tty "$(cat ${container_id})" env TERM=xterm
-    ansible-playbook --syntax-check /etc/ansible/roles/ansible-role-common/tests/test.yml
+    ansible-playbook --syntax-check /etc/ansible/roles/ansible-role-common/tests/test.yaml
 
   # Ensure the role/playbook runs without errors or failures.
   - >
     docker container exec --tty "$(cat ${container_id})" env TERM=xterm
-    ansible-playbook /etc/ansible/roles/ansible-role-common/tests/test.yml
+    ansible-playbook /etc/ansible/roles/ansible-role-common/tests/test.yaml
 
   # Run the role/playbook again to test idempotence.
   - idempotence=$(mktemp)
   - >
     docker container exec "$(cat ${container_id})"
-    ansible-playbook /etc/ansible/roles/ansible-role-common/tests/test.yml
+    ansible-playbook /etc/ansible/roles/ansible-role-common/tests/test.yaml
     | tee -a ${idempotence}
   - >
     tail ${idempotence}

@@ -1,0 +1,4 @@
+---
+- import_tasks: common.yaml
+- import_tasks: harden.yaml
+  when: hardened_hosts | default(true)
