@@ -8,6 +8,11 @@
   command: grep -E ^[^#].*\\s/\\s /etc/fstab
   changed_when: false
 
+# Some devices cannot make use of quotas because they seem to be
+# missing the /dev/root symlink. This is a workaround.
+- name: Workaround for missing /dev/root file.
+  import_tasks: disk-quotas-fix-dev-root.yaml
+
 - name: Enable disk quotas. # (On `ext3`, `ext4`, or `xfs` only.)
   when: root_fs_line.stdout.split()[2] is match('(?:ext[34]|xfs)')
   block:
@@ -33,12 +38,6 @@
       command: "mount -o remount /"
       args:
         warn: false
-
-    # Some devices cannot activate quotas because they seem to be
-    # missing the /dev/root symlink. This is a workaround.
-    - name: Workaround for missing /dev/root file.
-      when: edit_fstab is changed
-      import_tasks: disk-quotas-fix-dev-root.yaml
 
     - name: Create disk quota indexes.
       when: edit_fstab is changed
