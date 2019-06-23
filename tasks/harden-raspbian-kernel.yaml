@@ -123,25 +123,25 @@
   command: "make modules_install"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
-  notify: reboot
+  notify: Reboot.
 
 - name: Install RPi Linux kernel.
   command: "cp arch/arm/boot/zImage /boot/kernel{% if ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv7l' %}7{% endif %}.img"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
-  notify: reboot
+  notify: Reboot.
 
 - name: Install RPi device tree blobs.
   shell: "cp arch/arm/boot/dts/*.dtb /boot/"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
-  notify: reboot
+  notify: Reboot.
 
 - name: Install RPi device tree blob overlays.
   shell: "cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
-  notify: reboot
+  notify: Reboot.
 
 - name: Install RPi device tree blob overlays README file.
   shell: "cp arch/arm/boot/dts/overlays/README /boot/overlays/"

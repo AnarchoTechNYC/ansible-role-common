@@ -9,7 +9,7 @@
   loop:
     - raspberrypi-kernel
     - raspberrypi-bootloader
-  notify: reboot
+  notify: Reboot.
 
 # TODO: Figure out how to script disabling the hardware interfaces
 #       of the RPi version 3 hardware.

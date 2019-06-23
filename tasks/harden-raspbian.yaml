@@ -23,7 +23,7 @@
     - name: Update GRUB bootloader.
       when: grub_cmdline is changed
       command: update-grub
-      notify: reboot
+      notify: Reboot.
 
     - name: Check for RPi firmware bootloader.
       # See https://www.raspberrypi.org/documentation/configuration/cmdline-txt.md
