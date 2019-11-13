@@ -1,15 +1,19 @@
 ---
-language: minimal
+version: ~> 1.0
+
+os: linux
+language: shell
 
 env:
   - docker_repo: resin/rpi-raspbian
+  - docker_repo: geerlingguy/docker-debian10-ansible
   - docker_repo: geerlingguy/docker-debian9-ansible
   - docker_repo: geerlingguy/docker-ubuntu1804-ansible
   # TODO: Support for RedHat-based systems.
   #- docker_repo: geerlingguy/docker-centos7-ansible
   #- docker_repo: geerlingguy/docker-fedora27-ansible
 
-matrix:
+jobs:
   # TODO: Fix these failures?
   allow_failures:
     # TODO: Fixing the Raspbian build is going to require QEMU and
