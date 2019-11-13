@@ -21,6 +21,8 @@ jobs:
     #       https://www.balena.io/blog/building-arm-containers-on-any-x86-machine-even-dockerhub/
     #       In the mean time, allow this to fail.
     - env: docker_repo=resin/rpi-raspbian
+    - env: docker_repo=geerlingguy/docker-debian9-ansible
+    - env: docker_repo=geerlingguy/docker-ubuntu1804-ansible
 
 install:
   - docker image pull ${docker_repo}
