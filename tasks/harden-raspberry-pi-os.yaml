@@ -1,4 +1,4 @@
-# Tasks to harden a Raspbian OS system.
+# Tasks to harden a Raspberry Pi OS system.
 ---
 - name: Add AppArmor support to kernel.
   when:
@@ -33,7 +33,13 @@
 
     - name: Build AppArmor-enabled RPi kernel.
       when: cmdline_txt.stat.exists
-      import_tasks: harden-raspbian-kernel.yaml
+      import_tasks: harden-raspberry-pi-os-kernel.yaml
+
+    # TODO: Newer kernels need to see `apparmor=1 security=apparmor` passed to
+    #       the kernel explicitly to enable AppArmor? Otherwise, we get this
+    #       issue: https://we.riseup.net/tech-autonomy+infrastructure/apparmor#enabling-apparmor-at-boot-time-on-a-raspberry-pi
+    #- name: Add AppArmor command line parameters to RPi bootloader.
+
 
 - name: Install AppArmor utilities and profiles.
   package:

@@ -1,11 +1,15 @@
-# Common tasks for Debian-dervived operating systems.
+# Common tasks for Debian-derived operating systems.
 ---
-- name: Check for Raspbian OS.
+- name: Check for Raspberry Pi OS.
   register: rpi_issue
   stat:
     path: /etc/rpi-issue
     get_checksum: false
 
-- name: Include Raspbian-specific tasks.
-  when: rpi_issue.stat.exists
-  import_tasks: common-raspbian.yaml
+- name: Set host as Raspberry Pi OS.
+  set_fact:
+      raspberry_pi_os: true
+
+- name: Include Raspberry Pi OS-specific tasks.
+  when: raspberry_pi_os
+  import_tasks: common-raspberry-pi-os.yaml

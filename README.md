@@ -8,7 +8,7 @@ This role incorporates a number of security considerations that are not often fo
 
 * Recent Linux kernel with [AppArmor LSM](https://en.wikipedia.org/wiki/AppArmor) loaded and enabled, either via GRUB default boot menu entry or compiled-in when running on Raspberry Pi hardware.
 * [Disk quota](#configuring-disk-quotas) support enabled with configurable per-user or per-group disk utilization limits (on `ext3`, `ext4`, or `xfs` filesystems).
-* :constrution: TK-TODO: Describe additional security considerations.
+* :construction: TK-TODO: Describe additional security considerations.
 
 ## Role variables
 

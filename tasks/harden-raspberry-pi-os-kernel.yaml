@@ -1,7 +1,7 @@
 # Tasks to build a hardened Linux kernel on a Raspberry Pi device.
 #
 # This automates the procedure described in the RPi documentation:
-# https://www.raspberrypi.org/documentation/linux/kernel/building.md
+# https://www.raspberrypi.com/documentation/computers/linux_kernel.html
 ---
 - name: Ensure kernel build dependencies are present.
   package:
@@ -10,10 +10,11 @@
   loop:
     - git
     - bc
-    - python-pexpect # For kernel configuration questions.
+    - python3-pexpect # For kernel configuration questions.
     - bison
     - flex
     - libssl-dev
+    - make
 
 - name: Ensure local source directory exists.
   file:
@@ -29,6 +30,15 @@
     dest: /usr/local/src/rpi-kernel/linux
     depth: 1
 
+# The `make` command depends on the model of RPi.
+# See:
+# https://www.raspberrypi.com/documentation/computers/linux_kernel.html#default_configuration
+- name: Make ARMv8-A chipset kernel configuration.
+  when: ansible_architecture | default(ansible_machine) | default('aarch64') == 'aarch64'
+  command: "make bcm2711_defconfig"
+  args:
+    chdir: /usr/local/src/rpi-kernel/linux
+
 - name: Make ARMv7 chipset kernel configuration.
   when: ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv7l'
   command: "make bcm2709_defconfig"
@@ -36,7 +46,7 @@
     chdir: /usr/local/src/rpi-kernel/linux
 
 - name: Make ARMv6 chipset kernel configuration.
-  when: ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv6l'
+  when: ansible_architecture | default(ansible_machine) | default('armv6l') == 'armv6l'
   command: "make bcmrpi_defconfig"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
@@ -111,8 +121,8 @@
 - name: Recompile kernel.
   expect:
     chdir: /usr/local/src/rpi-kernel/linux
-    command: "make -j {{ ansible_processor_count | default(1) // 2 }} zImage modules dtbs"
-    creates: /usr/local/src/rpi-kernel/linux/arch/arm/boot/zImage
+    command: "make -j {{ ansible_processor_count | default(1) // 2 }} {% if 'aarch64' == ansible_machine %}Image.gz{% else %}zImage{% endif %} modules dtbs"
+    creates: "/usr/local/src/rpi-kernel/linux/arch/arm{% if 'aarch64' == ansible_machine %}64{% endif %}/boot/{% if 'aarch64' == ansible_machine %}Image.gz{% else %}zImage{% endif %}"
     timeout: null
     responses:
       'N/y/?': N
@@ -126,25 +136,25 @@
   notify: Reboot.
 
 - name: Install RPi Linux kernel.
-  command: "cp arch/arm/boot/zImage /boot/kernel{% if ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv7l' %}7{% endif %}.img"
+  command: "cp arch/arm{% if 'aarch64' == ansible_machine %}64{% endif %}/boot/{% if 'aarch64' == ansible_machine %}Image.gz{% else %}zImage{% endif %} /boot/kernel{% if ansible_architecture | default(ansible_machine) | default('armv7l') == 'armv7l' %}7{% elif 'aarch64' == ansible_machine %}8{% endif %}.img"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
   notify: Reboot.
 
 - name: Install RPi device tree blobs.
-  shell: "cp arch/arm/boot/dts/*.dtb /boot/"
+  shell: "cp arch/arm{% if 'aarch64' == ansible_machine %}64{% endif %}/boot/dts/{% if 'aarch64' == ansible_machine %}broadcom/{% endif %}*.dtb /boot/"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
   notify: Reboot.
 
 - name: Install RPi device tree blob overlays.
-  shell: "cp arch/arm/boot/dts/overlays/*.dtb* /boot/overlays/"
+  shell: "cp arch/arm{% if 'aarch64' == ansible_machine %}64{% endif %}/boot/dts/overlays/*.dtb* /boot/overlays/"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
   notify: Reboot.
 
 - name: Install RPi device tree blob overlays README file.
-  shell: "cp arch/arm/boot/dts/overlays/README /boot/overlays/"
+  shell: "cp arch/arm{% if 'aarch64' == ansible_machine %}64{% endif %}/boot/dts/overlays/README /boot/overlays/"
   args:
     chdir: /usr/local/src/rpi-kernel/linux
 

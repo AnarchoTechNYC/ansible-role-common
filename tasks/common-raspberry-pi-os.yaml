@@ -1,4 +1,4 @@
-# Common tasks for Raspbian OS hosts.
+# Common tasks for Raspberry Pi OS hosts.
 ---
 - name: Update to latest Raspberry Pi stock kernel and bootloader.
   when: not hardened_hosts | default('true')
