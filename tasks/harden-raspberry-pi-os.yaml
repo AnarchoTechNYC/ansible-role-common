@@ -38,6 +38,10 @@
     # TODO: Newer kernels need to see `apparmor=1 security=apparmor` passed to
     #       the kernel explicitly to enable AppArmor? Otherwise, we get this
     #       issue: https://we.riseup.net/tech-autonomy+infrastructure/apparmor#enabling-apparmor-at-boot-time-on-a-raspberry-pi
+    #
+    #       TL;DR:
+    #       The above two arguments simply need to be appended to the
+    #       `/boot/cmdline.txt` on Raspberry Pi hardware.
     #- name: Add AppArmor command line parameters to RPi bootloader.
 
 
